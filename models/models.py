@@ -2,6 +2,9 @@ from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Date, Floa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from config.db import engine
+from werkzeug.security import generate_password_hash, \
+     check_password_hash
+
 Base = declarative_base()
 
 song_to_playlist = Table('song_to_playlist', Base.metadata,
@@ -24,6 +27,12 @@ class User(Base):
 
     def __repr__(self):
         return "<User(user_id='%s')>" % (self.id)
+
+    def check_password(self, password):
+       return check_password_hash(self.password, password)
+
+    def set_password(self):
+       self.password = generate_password_hash(self.password)
 
 class Song(Base):
     __tablename__ = 'songs'
