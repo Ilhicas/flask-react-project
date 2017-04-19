@@ -3,16 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <title>Index</title>
-
+  <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">  
+  <link href="{{ url_for('static', filename='css/simple-sidebar.css') }}" rel="stylesheet">
+  
 </head>
 
 <body>
-    <h1> Hello </h1>
+
 
     <div>
-        <a href="/login_form"> Login</a>
-        <a href="/register_form"> Register</a>
+        <!-- Sidebar -->
+        <div class="nav-side-menu">
+            <div class="brand">Song ES</div>
+            <i class="glyphicon glyphicon-th-list toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
+            <div class="menu-list">
+            <ul id="menu-content" class="menu-content collapse out">
+        
+                <li>
+                    <a href="/playlists">Playlists</a>
+                    
+                </li>
+                <li>
+                    <a href="/users">Users</a>
+                    
+                </li>
+            </ul>
+        </div>
     </div>
+     <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid" id="main">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="container">
+                            {% block container %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
 </body>

@@ -215,7 +215,7 @@ def delete_playlist():
 def get_playlists():
     #TODO Get method in models.playlis associated with user according to request.args order by Name | Creation Date | Size
     #Should default to ascending order by name A to Z
-    pass
+    return render_template("playlists.html")
 
 #Requirement 8
 #Maximum URI depth for REST reached in this endpoint Collection - Resource - Collection
