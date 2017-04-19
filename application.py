@@ -11,8 +11,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user
 from models.models import User
 from config.db import session
 
-from werkzeug.security import generate_password_hash, \
-     check_password_hash
+
 
 
 # EB looks for an 'application' callable by default.
@@ -28,42 +27,78 @@ def logout():
     pass
 
 #Requirement 2
-@application.route("/login", methods=["GET"])
+@application.route("/login", methods=["GET", "POST"])
 def login():
-    #TODO There must be some validation method for form in users class
-    pass
+    #TODO We still have to "login" the user in the session!
+    if request.method == "POST":
+        if (request.is_json):
+            request_data = request.get_json(force = True)
+            if 'email' in request_data and 'password' in request_data:
+                user_email = request_data['email']
+                user_password = request_data['password']
+
+            else:
+                return jsonify( {
+                    "status": "failed",
+                    "message": "something is missing..."
+                })
+        # Else, we assume the request is a form
+        else:
+            user_email = request.form.get('email')
+            user_password = request.form.get('password')
+            if (user_email == None or user_password == None):
+                return jsonify( {
+                    "status": "failed",
+                    "message": "something is missing..."
+                })
+
+        # We fetch the user with this email
+        user = user_exists(user_email)
+        # The user does not exist...
+        if (user == None):
+            return jsonify( {
+                "status": "failed",
+                "message": "Invalid username or password"
+            })
+
+        # We check the password
+        if user.check_password(user_password):
+            #TODO Authenticate user in session
+            return jsonify( {
+                "status": "success",
+                "message": "Authenticated with success"
+            })
+
+        else:
+            return jsonify( {
+                "status": "failed",
+                "message": "Invalid username or password"
+        })
+
+    else:
+        #TODO O que queres fazer aqui?
+        pass
 
 #Requirement 1
 @application.route("/users", methods=["POST"])
 def create_new_user():
+    # Handles a json request if the request is json
     if (request.is_json):
         request_data = request.get_json(force = True)
-        if 'email' in request_data:
+        if 'email' in request_data and 'password' in request_data and 'confirm_password' in request_data:
             user_email = request_data['email']
-            if 'password' in request_data:
-                user_password = request_data['password']
-                if 'confirm_password' in request_data:
-                    if (user_password != request_data['confirm_password']):
-                        return jsonify( {
-                            "status": "failed",
-                            "message": "password and confirm_password don't match"
-                        })
-                else:
-                    return jsonify( {
-                        "status": "failed",
-                        "message": "confirm_password missing"
-                    })
-            else:
+            user_password = request_data['password']
+            if (user_password != request_data['confirm_password']):
                 return jsonify( {
                     "status": "failed",
-                    "message": "password missing"
+                    "message": "password and confirm_password don't match"
                 })
         else:
             return jsonify( {
                 "status": "failed",
-                "message": "email missing"
+                "message": "something is missing..."
             })
-
+    # Else, we assume the request is a form
     else:
         user_email = request.form.get('email')
         user_password = request.form.get('password')
@@ -78,24 +113,30 @@ def create_new_user():
                 "message": "something is missing..."
             })
 
-    user_password = set_password(user_password)
-    user_token = os.urandom(24).encode('hex')
-    if (user_exists(user_email)):
+    # If the email already exists...
+    if (user_exists(user_email) != None):
         return jsonify( {
             "status": "failed",
             "message": "email already in use"
         })
+    # And create a random session token
+    user_token = os.urandom(24).encode('hex')
 
+    # Saves new user in the database
     try:
         new_user = User(email = user_email, password = user_password, session_token = user_token)
+        # We hash the password
+        new_user.set_password()
         session.add(new_user)
         session.commit()
+    # Handles any unexpected exception....
     except Exception as e:
         return jsonify( {
             "status": "failed",
             "message": str(e)
         })
 
+    # Success!
     return jsonify( {
         "status": "ok",
         "message": "user created with success"
@@ -174,17 +215,9 @@ def main():
     return "Hello world", 200
 
 
-def set_password(password):
-   return generate_password_hash(password)
-
-def check_password(password):
-   return check_password_hash(self.pw_hash, password)
-
 def user_exists(email):
   user = session.query(User).filter(User.email == email).first()
-  if (user != None):
-      return True
-  return False
+  return user
 
 
 if __name__ == '__main__':
