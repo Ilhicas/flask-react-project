@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Date, Float, Table, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from config.db import engine
 Base = declarative_base()
 
 song_to_playlist = Table('song_to_playlist', Base.metadata,
@@ -9,10 +10,9 @@ song_to_playlist = Table('song_to_playlist', Base.metadata,
     ForeignKey('playlists.id'), primary_key=True))
 
 user_to_playlist = Table('user_to_playlist', Base.metadata,
-    Column('users_id', ForeignKey('user.id'),
-    primary_key=True),Column('playlists_id',
-    ForeignKey('playlist.id'), primary_key=True))
-
+    Column('users_id', ForeignKey('users.id'),
+    primary_key=True),Column('playlist_id',
+    ForeignKey('playlists.id'), primary_key=True))
 
 class User(Base):
     __tablename__ = 'users'
@@ -41,3 +41,6 @@ class Playlist(Base):
     description = Column(Text)
     users = relationship("User", secondary = user_to_playlist, cascade = "save-update")
     songs = relationship("Song", secondary = song_to_playlist, cascade = "save-update")
+
+
+Base.metadata.create_all(engine)

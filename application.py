@@ -1,4 +1,3 @@
-import os
 import sys
 import json
 import time
@@ -8,6 +7,7 @@ from datetime import date, timedelta, datetime
 from flask import Flask, request, abort, render_template, request, flash, url_for, render_template, redirect
 from flask_login import LoginManager, login_required, login_user, logout_user
 from models.models import User
+from config.db import session
 
 from werkzeug.security import generate_password_hash, \
      check_password_hash
