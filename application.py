@@ -34,10 +34,7 @@ def load_user(token):
 @login_required
 def logout():
     pass
-
-@application.route("/login_form")
-def login_form():
-    return render_template("login.html")
+    
 
 #Requirement 2
 @application.route("/login", methods=["GET", "POST"])
@@ -98,7 +95,11 @@ def login():
 
         return render_template('login.html', message=message)
     else:
-        return render_template("login.html")
+        register = request.args.get('register')
+        if register == "true":
+            return render_template("register.html")
+        else:
+            return render_template("login.html")
 
 #Requirement 1
 @application.route("/register_form")
