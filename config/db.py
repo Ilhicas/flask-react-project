@@ -1,11 +1,10 @@
+import os
 from sqlalchemy import create_engine
-
 from sqlalchemy.orm import sessionmaker, relationship
-
-
+import psycopg2
 # Database
 DATABASES = {
-    'default': y{
+    'default': {
         'NAME': 'songES',
         'USER': 'postgres',
         'PASSWORD': '14243160',
