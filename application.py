@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import time
@@ -5,6 +6,7 @@ import re
 
 from datetime import date, timedelta, datetime
 from flask import Flask, request, abort, render_template, request, flash, url_for, render_template, redirect
+from flask.json import jsonify
 from flask_login import LoginManager, login_required, login_user, logout_user
 from models.models import User
 from config.db import session
@@ -34,7 +36,71 @@ def login():
 #Requirement 1
 @application.route("/users", methods=["POST"])
 def create_new_user():
-    pass
+    if (request.is_json):
+        request_data = request.get_json(force = True)
+        if 'email' in request_data:
+            user_email = request_data['email']
+            if 'password' in request_data:
+                user_password = request_data['password']
+                if 'confirm_password' in request_data:
+                    if (user_password != request_data['confirm_password']):
+                        return jsonify( {
+                            "status": "failed",
+                            "message": "password and confirm_password don't match"
+                        })
+                else:
+                    return jsonify( {
+                        "status": "failed",
+                        "message": "confirm_password missing"
+                    })
+            else:
+                return jsonify( {
+                    "status": "failed",
+                    "message": "password missing"
+                })
+        else:
+            return jsonify( {
+                "status": "failed",
+                "message": "email missing"
+            })
+
+    else:
+        user_email = request.form.get('email')
+        user_password = request.form.get('password')
+        if (user_password != request.form.get('confirm_password')):
+            return jsonify( {
+                "status": "failed",
+                "message": "password and confirm_password don't match"
+            })
+        if (user_email == None or user_password == None):
+            return jsonify( {
+                "status": "failed",
+                "message": "something is missing..."
+            })
+
+    user_password = set_password(user_password)
+    user_token = os.urandom(24).encode('hex')
+    if (user_exists(user_email)):
+        return jsonify( {
+            "status": "failed",
+            "message": "email already in use"
+        })
+
+    try:
+        new_user = User(email = user_email, password = user_password, session_token = user_token)
+        session.add(new_user)
+        session.commit()
+    except Exception as e:
+        return jsonify( {
+            "status": "failed",
+            "message": str(e)
+        })
+
+    return jsonify( {
+        "status": "ok",
+        "message": "user created with success"
+    })
+
 
 #Requirement 1 and A4
 @application.route("/users/<user>", methods=["PUT"])
@@ -113,6 +179,13 @@ def set_password(password):
 
 def check_password(password):
    return check_password_hash(self.pw_hash, password)
+
+def user_exists(email):
+  user = session.query(User).filter(User.email == email).first()
+  if (user != None):
+      return True
+  return False
+
 
 if __name__ == '__main__':
     application.run(debug=True, port=9000)
