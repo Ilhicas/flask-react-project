@@ -6,6 +6,7 @@ from config.db import engine
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from sqlalchemy.sql import func
+from flask_login import UserMixin
 
 
 Base = declarative_base()
@@ -20,16 +21,14 @@ user_to_playlist = Table('user_to_playlist', Base.metadata,
     primary_key=True),Column('playlist_id',
     ForeignKey('playlists.id'), primary_key=True))
 
-class User(Base):
+class User(Base, UserMixin):
     __tablename__ = 'users'
     id = Column(Integer, Sequence('user_id_seq'), primary_key = True)
     email = Column(String(128), unique = True)
     password = Column(String(300))
     session_token = Column(String(128, convert_unicode=True))
     playlists = relationship("Playlist", secondary = user_to_playlist, cascade = "all")
-    is_authenticated = Column(Boolean(), default = False)
-    is_active = Column(Boolean(), default = True)
-    is_anonymous = Column(Boolean(), default = False)
+
 
     def __repr__(self):
         return "<User(user_id='%s')>" % (self.id)
@@ -39,15 +38,6 @@ class User(Base):
 
     def set_password(self):
        self.password = generate_password_hash(self.password)
-
-    def get_authenticated(self):
-        return self.is_authenticated
-
-    def get_active(self):
-        return self.is_active
-
-    def get_anonymous(self):
-        return self.is_anonymous
 
     def get_id(self):
         return self.session_token
