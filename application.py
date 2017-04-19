@@ -1,6 +1,5 @@
 import os
 import sys
-import json
 import time
 import re
 
@@ -10,21 +9,41 @@ from flask.json import jsonify
 from flask_login import LoginManager, login_required, login_user, logout_user
 from models.models import User
 from config.db import session
+from urlparse import urlparse, urljoin
 
 
 
 
 # EB looks for an 'application' callable by default.
 application = Flask(__name__)
+application.secret_key = '866b6340bb5dfb062adf6cb59ab40e694cea1df58419f389'
+login_manager = LoginManager()
+login_manager.init_app(application)
+login_manager.login_view = "login"
+
+
+@application.route("/menu")
+#TODO FIX THIS
+#@login_required
+def menu():
+    return render_template('menu.html')
+
 
 ##Requirement 4 @login_required decorator
-
+@login_manager.user_loader
+def user_loader(token):
+  user = session.query(User).filter(User.session_token == token).first()
+  return user
 
 #Requirement 3
 @application.route("/logout", methods=["GET"])
 @login_required
 def logout():
     pass
+
+@application.route("/login_form")
+def login_form():
+    return render_template("login.html")
 
 #Requirement 2
 @application.route("/login", methods=["GET", "POST"])
@@ -47,39 +66,52 @@ def login():
             user_email = request.form.get('email')
             user_password = request.form.get('password')
             if (user_email == None or user_password == None):
-                return jsonify( {
+                message = jsonify( {
                     "status": "failed",
                     "message": "something is missing..."
                 })
-
+                return render_template('login.html', message=message)
         # We fetch the user with this email
-        user = user_exists(user_email)
+        user = user_exists_email(user_email)
         # The user does not exist...
         if (user == None):
-            return jsonify( {
+            message = jsonify( {
                 "status": "failed",
                 "message": "Invalid username or password"
             })
 
+            return render_template('login.html', message=message)
+
         # We check the password
         if user.check_password(user_password):
-            #TODO Authenticate user in session
-            return jsonify( {
+            login_user(user)
+            message = jsonify( {
                 "status": "success",
                 "message": "Authenticated with success"
             })
+            next = request.args.get('next')
+            # is_safe_url should check if the url is safe for redirects.
+            if not is_safe_url(next):
+                return abort(400)
+
+            return redirect(next or url_for('menu'))
 
         else:
-            return jsonify( {
+            message =  jsonify( {
                 "status": "failed",
                 "message": "Invalid username or password"
         })
 
+        return render_template('login.html', message=message)
     else:
         #TODO O que queres fazer aqui?
         pass
 
 #Requirement 1
+@application.route("/register_form")
+def register_form():
+    return render_template('register.html')
+
 @application.route("/users", methods=["POST"])
 def create_new_user():
     # Handles a json request if the request is json
@@ -103,24 +135,27 @@ def create_new_user():
         user_email = request.form.get('email')
         user_password = request.form.get('password')
         if (user_password != request.form.get('confirm_password')):
-            return jsonify( {
+            message = jsonify( {
                 "status": "failed",
                 "message": "password and confirm_password don't match"
             })
+            return render_template('register.html', message=message)
         if (user_email == None or user_password == None):
-            return jsonify( {
+            message = jsonify( {
                 "status": "failed",
                 "message": "something is missing..."
             })
+            return render_template('register.html', message=message)
 
     # If the email already exists...
-    if (user_exists(user_email) != None):
-        return jsonify( {
+    if (user_exists_email(user_email) != None):
+        message =  jsonify( {
             "status": "failed",
             "message": "email already in use"
         })
+        return render_template('register.html', message=message)
     # And create a random session token
-    user_token = os.urandom(24).encode('hex')
+    user_token = unicode(os.urandom(24).encode('hex'))
 
     # Saves new user in the database
     try:
@@ -131,16 +166,18 @@ def create_new_user():
         session.commit()
     # Handles any unexpected exception....
     except Exception as e:
-        return jsonify( {
+        message = jsonify( {
             "status": "failed",
             "message": str(e)
         })
+        return render_template('register.html', message = message)
 
     # Success!
-    return jsonify( {
+    message = jsonify( {
         "status": "ok",
         "message": "user created with success"
     })
+    return render_template('menu.html', message=message)
 
 
 #Requirement 1 and A4
@@ -212,12 +249,19 @@ def delete_song(song):
 
 @application.route('/')
 def main():
-    return "Hello world", 200
+    return render_template('index.html')
 
 
-def user_exists(email):
+def user_exists_email(email):
   user = session.query(User).filter(User.email == email).first()
   return user
+
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
 
 
 if __name__ == '__main__':
