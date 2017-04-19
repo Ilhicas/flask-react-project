@@ -22,18 +22,12 @@ login_manager.init_app(application)
 login_manager.login_view = "login"
 
 
-@application.route("/menu")
-#TODO FIX THIS
-#@login_required
-def menu():
-    return render_template('menu.html')
-
-
 ##Requirement 4 @login_required decorator
 @login_manager.user_loader
-def user_loader(token):
+def load_user(token):
   user = session.query(User).filter(User.session_token == token).first()
   return user
+
 
 #Requirement 3
 @application.route("/logout", methods=["GET"])
@@ -94,7 +88,7 @@ def login():
             if not is_safe_url(next):
                 return abort(400)
 
-            return redirect(next or url_for('menu'))
+            return redirect(next or "/")
 
         else:
             message =  jsonify( {
@@ -104,8 +98,7 @@ def login():
 
         return render_template('login.html', message=message)
     else:
-        #TODO O que queres fazer aqui?
-        pass
+        return render_template("login.html")
 
 #Requirement 1
 @application.route("/register_form")
@@ -177,7 +170,7 @@ def create_new_user():
         "status": "ok",
         "message": "user created with success"
     })
-    return render_template('menu.html', message=message)
+    return redirect("/")
 
 
 #Requirement 1 and A4
@@ -248,9 +241,13 @@ def delete_song(song):
 
 
 @application.route('/')
+@login_required
 def main():
     return render_template('index.html')
 
+@login_manager.unauthorized_handler
+def unauthorized():
+    return redirect("/login")
 
 def user_exists_email(email):
   user = session.query(User).filter(User.email == email).first()
