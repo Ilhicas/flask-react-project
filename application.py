@@ -227,16 +227,16 @@ def delete_user(user):
     # Unexpected exception handling...
     except Exception as e:
         message = "Error... Try again"
-        if (request.is_json):
+        if request.is_json:
             return jsonify( {
                 "message": message
             })
         else:
             return render_template('index.html', message= message)
     # If to_delete is None, the user does not exist or the user that made the request is not the same that we want to delete
-    if (to_delete is None):
+    if to_delete is None:
         message = "user does not exist or you are not the user"
-        if (request.is_json):
+        if request.is_json:
             return jsonify( {
                 "message": message
             })
@@ -249,7 +249,7 @@ def delete_user(user):
     # And we commit the change to the db
     session.commit()
     message = "user deleted with success"
-    if (request.is_json):
+    if request.is_json:
         return jsonify( {
             "message": message
         })
@@ -273,19 +273,9 @@ def create_playlist():
     else:
         playlist_name = request.form.get('name')
         playlist_description = request.form.get('description')
-
-        if (user_email == None or user_password == None):
-            return make_response("There is no name or description in request", 400)
-
-    user_token = current_user.get_id()
-    try:
-        user = session.query(User).filter(User.session_token == user_token).first()
-    except Exception as e:
-        print(e)
-        return make_response("Unknown error", 500)
-    if user is None:
-        return make_response("Error validating user", 400)
-    new_playlist = Playlist(name = playlist_name, description = playlist_description, user_id = user.id)
+    
+    user_id = current_user.get_id(token=False)
+    new_playlist = Playlist(name = playlist_name, description = playlist_description, user_id = user_id)
     session.add(new_playlist)
     session.commit()
     return make_response("Playlist added with success", 200)
@@ -310,7 +300,16 @@ def delete_playlist():
 def get_playlists():
     #TODO Get method in models.playlis associated with user according to request.args order by Name | Creation Date | Size
     #Should default to ascending order by name A to Z
-    return render_template("playlists.html")
+    
+    #TODO Playlists only of user id
+    query = session.query(Playlist).filter(Playlist.user_id == current_user.get_id(token=False))
+    playlists = [row.__dict__ for row in query.all()]
+    
+    if request.is_json:
+        return jsonify(playlists)
+    else:
+        user = current_user.get_id(token=False)
+        return render_template("playlists.html", user=user, playlists=playlists)
 
 #Requirement 8
 #Maximum URI depth for REST reached in this endpoint Collection - Resource - Collection
