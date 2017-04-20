@@ -4,9 +4,10 @@ import time
 import re
 
 from datetime import date, timedelta, datetime
-from flask import Flask, request, abort, render_template, request, flash, url_for, render_template, redirect
+from flask import Flask, request, abort, render_template, request, flash, \
+url_for, render_template, redirect, make_response
 from flask.json import jsonify
-from flask_login import LoginManager, login_required, login_user, logout_user
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from models.models import User
 from config.db import session
 from urlparse import urlparse, urljoin
@@ -33,8 +34,9 @@ def load_user(token):
 @application.route("/logout", methods=["GET"])
 @login_required
 def logout():
-    pass
-    
+    logout_user()
+    return redirect("/")
+
 
 #Requirement 2
 @application.route("/login", methods=["GET", "POST"])
@@ -75,7 +77,10 @@ def login():
 
         # We check the password
         if user.check_password(user_password):
-            login_user(user)
+            if request.form.get("rememberMe") is not None:
+                login_user(user, remember=True)
+            else:
+                login_user(user, remember=False)
             message = jsonify( {
                 "status": "success",
                 "message": "Authenticated with success"
@@ -112,43 +117,23 @@ def create_new_user():
     if (request.is_json):
         request_data = request.get_json(force = True)
         if 'email' in request_data and 'password' in request_data and 'confirm_password' in request_data:
-            user_email = request_data['email']
             user_password = request_data['password']
+            user_email = request_data['email']
             if (user_password != request_data['confirm_password']):
-                return jsonify( {
-                    "status": "failed",
-                    "message": "password and confirm_password don't match"
-                })
+                return make_response("Passwords don't match", 400)
         else:
-            return jsonify( {
-                "status": "failed",
-                "message": "something is missing..."
-            })
+            return make_response("There is no email, password or password confirmation in request", 400)
     # Else, we assume the request is a form
     else:
-        user_email = request.form.get('email')
         user_password = request.form.get('password')
+        user_email = request.form.get('email')
         if (user_password != request.form.get('confirm_password')):
-            message = jsonify( {
-                "status": "failed",
-                "message": "password and confirm_password don't match"
-            })
-            return render_template('register.html', message=message)
+            return make_response("Passwords don't match", 400)
         if (user_email == None or user_password == None):
-            message = jsonify( {
-                "status": "failed",
-                "message": "something is missing..."
-            })
-            return render_template('register.html', message=message)
+            return make_response("There is no password or password confirmation in request", 400)
 
-    # If the email already exists...
-    if (user_exists_email(user_email) != None):
-        message =  jsonify( {
-            "status": "failed",
-            "message": "email already in use"
-        })
-        return render_template('register.html', message=message)
-    # And create a random session token
+
+    # Create a random session token
     user_token = unicode(os.urandom(24).encode('hex'))
 
     # Saves new user in the database
@@ -177,16 +162,95 @@ def create_new_user():
 #Requirement 1 and A4
 @application.route("/users/<user>", methods=["PUT"])
 @login_required
-def update_user():
-    #TODO Session must be equal to user to update
-    pass
+def update_user(user):
+    # We get the user sesion_token from the session
+    session_token = current_user.get_id()
+    # Handles a json request if the request is json
+    if (request.is_json):
+        request_data = request.get_json(force = True)
+        if 'new_password' in request_data and 'password' in request_data and 'confirm_password' in request_data:
+            user_password = request_data['password']
+            new_password = request_data['new_password']
+            confirm_password = request_data['confirm_password']
+        else:
+            return make_response("There is no new_password, password or password confirmation in request", 400)
+    # Else, we assume the request is a form
+    else:
+        user_password = request.form.get('password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        if (user_email == None or user_password == None):
+            return make_response("There is no new_password, password or password confirmation in request", 400)
 
-#Requirement 1
+    try:
+        to_update = session.query(User).filter(User.id == user, User.session_token == session_token).first()
+    except Exception as e:
+        print(e)
+        return make_response("Unknown error", 500)
+
+    if to_update is None:
+        return make_response("Invalid User", 400)
+
+    if new_password != confirm_password:
+        return make_response("Passwords don't match", 400)
+
+    # If the 'old' password is validated
+    if to_update.check_password(user_password):
+        # We need to create a new session token
+        user_token = unicode(os.urandom(24).encode('hex'))
+        to_update.session_token = user_token
+        to_update.password = new_password
+        to_update.set_password()
+        session.commit()
+        return make_response("User Updated with Success", 200)
+
+    else:
+        return make_response("Wrong Password", 400)
+
+
+
+
+
+#Requirement 1 - Feito, falta perceber o "return"
 @application.route("/users/<user>", methods=["DELETE"])
 @login_required
-def delete_user():
-    #TODO Session must be equal to user to delete
-    pass
+def delete_user(user):
+    # We get the user sesion_token from the session
+    session_token = current_user.get_id()
+    try:
+        # We search for a user with the specified ID and with the same session_token as the one that made the request
+        to_delete = session.query(User).filter(User.session_token==session_token, User.id == user).first()
+    # Unexpected exception handling...
+    except Exception as e:
+        message = "Error... Try again"
+        if (request.is_json):
+            return jsonify( {
+                "message": message
+            })
+        else:
+            return render_template('index.html', message= message)
+    # If to_delete is None, the user does not exist or the user that made the request is not the same that we want to delete
+    if (to_delete is None):
+        message = "user does not exist or you are not the user"
+        if (request.is_json):
+            return jsonify( {
+                "message": message
+            })
+        else:
+            return render_template('index.html', message= message)
+    # We logout the user from the session
+    logout_user()
+    # We delete the user from the database
+    session.delete(to_delete)
+    # And we commit the change to the db
+    session.commit()
+    message = "user deleted with success"
+    if (request.is_json):
+        return jsonify( {
+            "message": message
+        })
+    else:
+        return render_template("login.html", message= message)
 
 #Requirement 5
 @application.route("/playlists", methods=["POST"])
@@ -239,7 +303,6 @@ def create_song():
 def delete_song(song):
     #TODO Delete method in models.song, only if user in session is the creator
     pass
-
 
 @application.route('/')
 @login_required
