@@ -8,7 +8,7 @@ from flask import Flask, request, abort, render_template, request, flash, \
 url_for, render_template, redirect, make_response
 from flask.json import jsonify
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
-from models.models import User
+from models.models import User, Playlist, Song
 from config.db import session
 from urlparse import urlparse, urljoin
 
@@ -257,7 +257,34 @@ def delete_user(user):
 @login_required
 def create_playlist():
     #TODO Create method in models.playlist - Attribute Name
-    pass
+    # Handles a json request if the request is json
+    if (request.is_json):
+        request_data = request.get_json(force = True)
+        if 'name' in request_data and 'description' in request_data:
+            playlist_name = request_data['name']
+            playlist_description = request_data['description']
+        else:
+            return make_response("There is no name or description in request", 400)
+    # Else, we assume the request is a form
+    else:
+        playlist_name = request.form.get('name')
+        playlist_description = request.form.get('description')
+
+        if (user_email == None or user_password == None):
+            return make_response("There is no name or description in request", 400)
+
+    user_token = current_user.get_id()
+    try:
+        user = session.query(User).filter(User.session_token == user_token).first()
+    except Exception as e:
+        print(e)
+        return make_response("Unknown error", 500)
+    if user is None:
+        return make_response("Error validating user", 400)
+    new_playlist = Playlist(name = playlist_name, description = playlist_description, user_id = user.id)
+    session.add(new_playlist)
+    session.commit()
+    return make_response("Playlist added with success", 200)
 
 #Requirement 6
 @application.route("/playlists/<playlist>", methods=["PUT"])
