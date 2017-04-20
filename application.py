@@ -106,10 +106,6 @@ def login():
         else:
             return render_template("login.html")
 
-#Requirement 1
-@application.route("/register_form")
-def register_form():
-    return render_template('register.html')
 
 @application.route("/users", methods=["POST"])
 def create_new_user():
@@ -209,8 +205,16 @@ def update_user(user):
 
 
 
-
-
+@application.route("/users/<int:user>", methods=["GET"])
+@login_required
+def user_account(user):
+    session_id = current_user.get_id(token=False)
+    
+    if user == session_id:
+        return render_template("user.html", user=session_id)
+    else:
+        return make_response("Not logged in as that user", 401)
+    
 #Requirement 1 - Feito, falta perceber o "return"
 @application.route("/users/<user>", methods=["DELETE"])
 @login_required
@@ -334,7 +338,9 @@ def delete_song(song):
 @application.route('/')
 @login_required
 def main():
-    return render_template('index.html')
+    user_token = current_user.get_id(token=False)
+
+    return render_template('index.html', user=user_token)
 
 @login_manager.unauthorized_handler
 def unauthorized():

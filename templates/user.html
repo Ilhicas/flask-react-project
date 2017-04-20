@@ -1,0 +1,26 @@
+{% extends 'index.html' %} {% block container %}
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headinguser">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseuser" aria-expanded="false"
+                    aria-controls="collapseuser"><span class="glyphicon glyphicon-plus" aria-hidden="false"></span>
+          Settings
+        </a>
+            </h4>
+        </div>
+        <div id="collapseuser" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headinguser">
+            <div class="panel-body">
+                <div>Setting Mock</div>
+            </div>
+        </div>
+    </div>
+
+        {% for playlist in playlists %} "OK" {% endfor %}
+            
+    </div>
+
+
+    
+{% endblock %}

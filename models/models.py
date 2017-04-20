@@ -37,8 +37,12 @@ class User(Base, UserMixin):
     def set_password(self):
        self.password = generate_password_hash(self.password)
 
-    def get_id(self):
-        return self.session_token
+    def get_id(self, token=True):
+        if token is True:
+            return self.session_token
+        else:
+            return self.id
+    
 
 class Song(Base):
     __tablename__ = 'songs'
