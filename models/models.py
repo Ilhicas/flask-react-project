@@ -16,10 +16,6 @@ song_to_playlist = Table('song_to_playlist', Base.metadata,
     primary_key=True),Column('playlist_id',
     ForeignKey('playlists.id'), primary_key=True))
 
-user_to_playlist = Table('user_to_playlist', Base.metadata,
-    Column('users_id', ForeignKey('users.id'),
-    primary_key=True),Column('playlist_id',
-    ForeignKey('playlists.id'), primary_key=True))
 
 class User(Base, UserMixin):
     __tablename__ = 'users'
@@ -27,7 +23,9 @@ class User(Base, UserMixin):
     email = Column(String(128), unique = True)
     password = Column(String(300))
     session_token = Column(String(128, convert_unicode=True))
-    playlists = relationship("Playlist", secondary = user_to_playlist, cascade = "all")
+    playlists= relationship("Playlist", back_populates="users")
+
+
 
 
     def __repr__(self):
@@ -58,7 +56,8 @@ class Playlist(Base):
     description = Column(Text)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
-    users = relationship("User", secondary = user_to_playlist, cascade = "save-update")
+    user_id = Column(Integer, ForeignKey('users.id'))
+    users = relationship("User", back_populates="playlists")
     songs = relationship("Song", secondary = song_to_playlist, cascade = "save-update")
 
 
