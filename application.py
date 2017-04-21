@@ -362,17 +362,14 @@ def get_songs_in_playlist(playlist):
     if my_playlist is None:
         return make_response("Not your playlist", 401)
 
-    
-    print my_playlist
-    songs = [row.__dict__ for row in my_playlist.songs] #### CORRIGIR ####
+
+    songs = [row.__dict__ for row in my_playlist.songs]
     for song in songs:
-        print song
-    return make_response("We should print them...", 200)
-    # if request.is_json:
-    #     return jsonify(songs)
-    # else:
-    #     user = current_user.get_id(token=False)
-    #     return render_template("playlists.html", user=user, playlists=playlists)
+        del(song['_sa_instance_state'])
+
+
+    return jsonify(songs)
+
 
 
 #Requirement 10 Add a song to a playlist
@@ -402,7 +399,7 @@ def add_song_to_playlist(song, playlist):
 @application.route("/songs", methods=["GET"])
 @login_required
 def get_songs():
-    
+
     query = session.query(Song)
     songs = [row.__dict__ for row in query.all()]
 
