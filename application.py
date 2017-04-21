@@ -353,7 +353,13 @@ def get_playlists():
 @login_required
 def get_songs_in_playlist(playlist):
 
-    if (my_playlist = session.query(Playlist).filter(Playlist.id == playlist).first()) is None:
+    try:
+        my_playlist = session.query(Playlist).filter(Playlist.id == playlist).first()
+    except Exception as e:
+        print(e)
+        return make_response("Unknown error", 500)
+        
+    if my_playlist is None:
         return make_response("Not your playlist", 401)
 
     for song in my_playlist.songs:
