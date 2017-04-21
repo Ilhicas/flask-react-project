@@ -287,6 +287,10 @@ def create_playlist():
 def update_playlist(playlist):
     #TODO Update method in models.playlis associated with user, it should allow for adding songs / remove, these are part of the resource as a method and should not be in delete
     user_id = current_user.get_id(token=False)
+
+    song = request.args.get('add_song')
+    if song:
+        return add_song_to_playlist(song, playlist)
     if (request.is_json):
         request_data = request.get_json(force = True)
         if 'name' in request_data:
@@ -369,11 +373,15 @@ def get_songs_in_playlist(playlist):
 
     return jsonify(songs)
 
+@application.route("/playlists/<int:playlist>/songs", methods=["GET"])
+@login_required
+def del_songs_in_playlist(playlist):
+    pass
 
 
 #Requirement 10 Add a song to a playlist
-@application.route("/songs/<int:song>/<int:playlist>", methods=["PUT"])
-@login_required
+# @application.route("/playlists/<int:song>/<int:playlist>", methods=["PUT"])
+# @login_required
 def add_song_to_playlist(song, playlist):
     user_id = current_user.get_id(token=False)
     try:
