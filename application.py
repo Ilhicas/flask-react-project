@@ -209,14 +209,14 @@ def update_user(user):
 @login_required
 def user_account(user):
     session_id = current_user.get_id(token=False)
-    
+
     if user == session_id:
         return render_template("user.html", user=session_id)
     else:
         return make_response("Not logged in as that user", 401)
-    
+
 #Requirement 1 - Feito, falta perceber o "return"
-@application.route("/users/<user>", methods=["DELETE"])
+@application.route("/users/<int:user>", methods=["DELETE"])
 @login_required
 def delete_user(user):
     # We get the user sesion_token from the session
@@ -273,19 +273,55 @@ def create_playlist():
     else:
         playlist_name = request.form.get('name')
         playlist_description = request.form.get('description')
-    
+        if playlist_name is None or playlist_description is None:
+            return make_response("There is no name or description in request", 400)
     user_id = current_user.get_id(token=False)
     new_playlist = Playlist(name = playlist_name, description = playlist_description, user_id = user_id)
     session.add(new_playlist)
     session.commit()
     return make_response("Playlist added with success", 200)
 
+
 #Requirement 6
-@application.route("/playlists/<playlist>", methods=["PUT"])
+@application.route("/playlists/<int:playlist>", methods=["PUT"])
 @login_required
 def update_playlist(playlist):
     #TODO Update method in models.playlis associated with user, it should allow for adding songs / remove, these are part of the resource as a method and should not be in delete
-    pass
+    user_id = current_user.get_id(token=False)
+    if (request.is_json):
+        request_data = request.get_json(force = True)
+        if 'name' in request_data:
+            playlist_name = request_data['name']
+        if 'description' in request_data:
+            playlist_description = request_data['description']
+        else:
+            return make_response("There is no name or description in request", 400)
+    # Else, we assume the request is a form
+    else:
+        playlist_name = request.form.get('name')
+        playlist_description = request.form.get('description')
+
+    try:
+        to_update = session.query(Playlist).filter(Playlist.id == playlist, Playlist.user_id == user_id).first()
+    except Exception as e:
+        print(e)
+        return make_response("Unknown error", 500)
+
+    if to_update is None:
+        return make_response("There is no such playlist", 400)
+
+    if playlist_name is not None:
+        to_update.name = playlist_name
+    if playlist_description is not None:
+        to_update.description = playlist_description
+
+
+    session.commit()
+
+    print(to_update.name)
+    print(to_update.description)
+
+    return make_response("Playlist updated with success", 200)
 
 #Requirement 9
 @application.route("/playlists", methods=["DELETE"])
@@ -300,11 +336,11 @@ def delete_playlist():
 def get_playlists():
     #TODO Get method in models.playlis associated with user according to request.args order by Name | Creation Date | Size
     #Should default to ascending order by name A to Z
-    
+
     #TODO Playlists only of user id
     query = session.query(Playlist).filter(Playlist.user_id == current_user.get_id(token=False))
     playlists = [row.__dict__ for row in query.all()]
-    
+
     if request.is_json:
         return jsonify(playlists)
     else:
