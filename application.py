@@ -235,7 +235,7 @@ def delete_user(user):
             return render_template('index.html', message= message)
     # If to_delete is None, the user does not exist or the user that made the request is not the same that we want to delete
     if to_delete is None:
-        message = "user does not exist or you are not the user"
+        message = "User does not exist or you are not the user"
         if request.is_json:
             return jsonify( {
                 "message": message
@@ -349,19 +349,52 @@ def get_playlists():
 
 #Requirement 8
 #Maximum URI depth for REST reached in this endpoint Collection - Resource - Collection
-@application.route("/playlists/<playlist>/songs", methods=["GET"])
+@application.route("/playlists/<int:playlist>/songs", methods=["GET"])
 @login_required
 def get_songs_in_playlist(playlist):
-    #TODO Get method in models.playlist for all related songs
-    pass
+
+    if (my_playlist = session.query(Playlist).filter(Playlist.id == playlist).first()) is None:
+        return make_response("Not your playlist", 401)
+
+    for song in my_playlist.songs:
+        print song
+    return make_response("Songs fetched", 200)
+    # if request.is_json:
+    #     return jsonify(songs)
+    # else:
+    #     user = current_user.get_id(token=False)
+    #     return render_template("playlists.html", user=user, playlists=playlists)
+
 
 
 #Requirement 11
 @application.route("/songs", methods=["POST"])
 @login_required
 def create_song():
-    #TODO Create method in models.song
-    pass
+    #TODO !Implement song upload!
+    #TODO Create method in models.playlist - Attribute Name
+    # Handles a json request if the request is json
+    if (request.is_json):
+        request_data = request.get_json(force = True)
+        if 'name' in request_data and 'album' in request_data and 'artist' in request_data:
+            song_name = request_data['name']
+            song_album = request_data['album']
+            song_artist = request_data['artist']
+        else:
+            return make_response("There is no name, album or artist in request", 400)
+    # Else, we assume the request is a form
+    else:
+        song_name = request.form.get('name')
+        song_album = request.form.get('album')
+        song_artist = request.form.get('artist')
+        if song_name is None or song_album is None or song_artist is None:
+            return make_response("There is no name or description in request", 400)
+
+    user_id = current_user.get_id(token=False)
+    new_song = Song(name = song_name, album = song_album, artist = song_artist, user_id = user_id)
+    session.add(new_song)
+    session.commit()
+    return make_response("Song added with success", 200)
 
 #Requirement 12 and A5
 @application.route("/songs/<song>", methods=["DELETE"])
