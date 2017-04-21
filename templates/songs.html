@@ -1,0 +1,48 @@
+{% extends 'index.html' %} {% block container %}
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingnew_song">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapsenew_song" aria-expanded="false" aria-controls="collapsenew_song"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New song
+                </a>
+            </h4>
+        </div>
+        <div id="collapsenew_song" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingnew_song">
+            <div class="panel-body">
+                <form id="songForm" role="form" class="col-lg-8 col-lg-offset-2 form-horizontal" action="/songs" method="post" enctype="multipart/form-data">
+                    <div class="form-group" id="name_form">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="song_name" aria-describedby="songhelp" placeholder="Name of song" name="name">
+
+                    </div>
+                    <div class="form-group" id="album_form">
+                        <label for="album">Album</label>
+                        <input type="text" class="form-control" id="song_album" aria-describedby="songhelp" placeholder="Album of song" name="album">
+
+                    </div>
+                    <div class="form-group" id="artist_form">
+                        <label for="name">Artist</label>
+                        <input type="text" class="form-control" id="song_artist" aria-describedby="songhelp" placeholder="Artist of song" name="artist">
+
+                    </div>
+                    <p><input type=file name=file>
+                    <input type=submit value=Upload>
+                    </p>
+    
+                <div>
+        <button type="submit" class="btn btn-primary center-block">Create song</button>
+    </div>
+        </div>
+
+            
+            
+        </div>
+
+        </form>
+        </div>
+    </div>
+        {% for song in songs %} {% include "song.html" %} {% endfor %}
+</div>
+
+{% endblock %}

@@ -362,7 +362,8 @@ def get_songs_in_playlist(playlist):
     if my_playlist is None:
         return make_response("Not your playlist", 401)
 
-
+    
+    print my_playlist
     songs = [row.__dict__ for row in my_playlist.songs] #### CORRIGIR ####
     for song in songs:
         print song
@@ -397,6 +398,19 @@ def add_song_to_playlist(song, playlist):
     session.commit()
     return make_response("Song added to playlist", 200)
 
+
+@application.route("/songs", methods=["GET"])
+@login_required
+def get_songs():
+    
+    query = session.query(Song)
+    songs = [row.__dict__ for row in query.all()]
+
+    if request.is_json:
+        return jsonify(songs)
+    else:
+        user = current_user.get_id(token=False)
+        return render_template("songs.html", user=user, songs=songs)
 
 #Requirement 11
 @application.route("/songs", methods=["POST"])
