@@ -362,9 +362,11 @@ def get_songs_in_playlist(playlist):
     if my_playlist is None:
         return make_response("Not your playlist", 401)
 
-    for song in my_playlist.songs:
+
+    songs = [row.__dict__ for row in my_playlist.songs] #### CORRIGIR ####
+    for song in songs:
         print song
-    return make_response("Songs fetched", 200)
+    return make_response("We should print them...", 200)
     # if request.is_json:
     #     return jsonify(songs)
     # else:
