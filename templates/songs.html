@@ -25,8 +25,8 @@
                         <label for="name">Artist</label>
                         <input type="text" class="form-control" id="song_artist" aria-describedby="songhelp" placeholder="Artist of song" name="artist">
 
-                    </div>
-                    <p><input type=file name=file>
+                    </div class="form-group" id="song_file">
+                    <p><input type="file" name="file">
                     </p>
     
                 <div>
@@ -40,21 +40,27 @@
 
         </form>
         <script>
-        $("#createSong").click(function(event){
-                event.preventDefault();
-                form = $("#songForm").serialize() ;
-                $.ajax({
-                type: "POST",
-                data: form,
-                url: "/songs",
+        $("#songForm").submit(function(){
 
-                success : function(data){
-                    alert("Changes successfully applied")
+            var formData = new FormData($(this)[0]);
+        
+            $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                data: formData,
+                success: function (data) {
+                    alert(data)
                 },
                 error : function(jqXHR, textStatus, errorThrown) {
                     alert(jqXHR.responseText)
-                }
-            })});
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        
+            return false;
+        });
         </script>
         </div>
     </div>

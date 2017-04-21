@@ -21,8 +21,7 @@ application.secret_key = '866b6340bb5dfb062adf6cb59ab40e694cea1df58419f389'
 login_manager = LoginManager()
 login_manager.init_app(application)
 login_manager.login_view = "login"
-
-
+application.config['SONG_FOLDER'] = "songs"
 ##Requirement 4 @login_required decorator
 @login_manager.user_loader
 def load_user(token):
@@ -66,8 +65,8 @@ def login():
                 return render_template('login.html', message=message)
         # We fetch the user with this email
         user = user_exists_email(user_email)
-        # The user does not exist...
         if (user == None):
+        # The user does not exist...
             message = jsonify( {
                 "status": "failed",
                 "message": "Invalid username or password"
@@ -413,10 +412,12 @@ def get_songs():
 @application.route("/songs", methods=["POST"])
 @login_required
 def create_song():
+    # Get the name of the uploaded file
+    
     #TODO !Implement song upload!
     #TODO Create method in models.playlist - Attribute Name
     # Handles a json request if the request is json
-    if (request.is_json):
+    if request.is_json:
         request_data = request.get_json(force = True)
         if 'name' in request_data and 'album' in request_data and 'artist' in request_data:
             song_name = request_data['name']
@@ -426,6 +427,8 @@ def create_song():
             return make_response("There is no name, album or artist in request", 400)
     # Else, we assume the request is a form
     else:
+        file = request.files['file']
+        file.save(os.path.join(application.config['SONG_FOLDER'], file.filename))
         song_name = request.form.get('name')
         song_album = request.form.get('album')
         song_artist = request.form.get('artist')
