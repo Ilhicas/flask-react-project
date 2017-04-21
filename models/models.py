@@ -49,9 +49,11 @@ class Song(Base):
     album = Column(String(128)) # Album name
     artist = Column(String(128)) # Artist name
     hidden = Column(Boolean, default=False) # If the song gets deleted, this should be marked as true
+    path = Column(Text)
     playlists = relationship("Playlist", secondary = song_to_playlist, back_populates="songs", cascade = "save-update")
     user_id = Column(Integer, ForeignKey('users.id'))
     users = relationship("User", back_populates="songs")
+
 
 class Playlist(Base):
     __tablename__ = 'playlists'
