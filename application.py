@@ -372,6 +372,29 @@ def get_songs_in_playlist(playlist):
     #     return render_template("playlists.html", user=user, playlists=playlists)
 
 
+#Requirement 10 Add a song to a playlist
+@application.route("/songs/<int:song>/<int:playlist>", methods=["PUT"])
+@login_required
+def add_song_to_playlist(song, playlist):
+    user_id = current_user.get_id(token=False)
+    try:
+        user_song = session.query(Song).filter(Song.id == song, Song.user_id == user_id, Song.hidden == False).first()
+        if user_song is None:
+            return make_response("Not your song", 401)
+        user_playlist = session.query(Playlist).filter(Playlist.id == playlist, Playlist.user_id == user_id).first()
+        if user_playlist is None:
+            return make_response("Not your playlist", 401)
+    except Exception as e:
+        print(e)
+        return make_response("Unknown error", 500)
+
+    if user_song in user_playlist.songs:
+        return make_response("Song already on playlist", 401)
+
+    user_playlist.songs.append(user_song)
+    session.commit()
+    return make_response("Song added to playlist", 200)
+
 
 #Requirement 11
 @application.route("/songs", methods=["POST"])
