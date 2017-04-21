@@ -10,7 +10,7 @@
         </div>
         <div id="collapsenew_playlist" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingnew_playlist">
             <div class="panel-body">
-                <form id="playlistForm" role="form" class="col-lg-8 col-lg-offset-2 form-horizontal" action = "/playlists" method = "post">
+                <form id="playlistForm" role="form" class="col-lg-8 col-lg-offset-2 form-horizontal">
                     <div class="form-group" id="name_form">
                         <label for="name">Name</label>
                         <input type="text" class="form-control" id="playlist_name" aria-describedby="playlisthelp" placeholder="Name of playlist" name="name">
@@ -23,7 +23,7 @@
                     </div>
     
                 <div>
-        <button type="submit" class="btn btn-primary center-block">Create Playlist</button>
+        <button id="createPlaylist" type="submit" class="btn btn-primary center-block">Create Playlist</button>
     </div>
         </div>
 
@@ -32,7 +32,25 @@
         </div>
 
         </form>
+        <script>
+        $("#createPlaylist").click(function(event){
+                event.preventDefault();
+                form = $("#playlistForm").serialize() ;
+                $.ajax({
+                type: "POST",
+                data: form,
+                url: "/playlists",
+
+                success : function(data){
+                    alert("Changes successfully applied")
+                },
+                error : function(jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText)
+                }
+            })});
+        </script>
         </div>
+    </div>
         {% for playlist in playlists %} {% include "playlist.html" %} {% endfor %}
 </div>
 

@@ -27,11 +27,10 @@
 
                     </div>
                     <p><input type=file name=file>
-                    <input type=submit value=Upload>
                     </p>
     
                 <div>
-        <button type="submit" class="btn btn-primary center-block">Create song</button>
+        <button type="submit" id="createSong" class="btn btn-primary center-block">Create song</button>
     </div>
         </div>
 
@@ -40,6 +39,23 @@
         </div>
 
         </form>
+        <script>
+        $("#createSong").click(function(event){
+                event.preventDefault();
+                form = $("#songForm").serialize() ;
+                $.ajax({
+                type: "POST",
+                data: form,
+                url: "/songs",
+
+                success : function(data){
+                    alert("Changes successfully applied")
+                },
+                error : function(jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText)
+                }
+            })});
+        </script>
         </div>
     </div>
         {% for song in songs %} {% include "song.html" %} {% endfor %}
