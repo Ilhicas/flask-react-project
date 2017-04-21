@@ -24,6 +24,7 @@ class User(Base, UserMixin):
     password = Column(String(300))
     session_token = Column(String(128, convert_unicode=True))
     playlists= relationship("Playlist", back_populates="users")
+    songs = relationship("Song", back_populates="users")
 
     def __repr__(self):
         return "<User(user_id='%s')>" % (self.id)
