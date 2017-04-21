@@ -48,8 +48,9 @@ class Song(Base):
     album = Column(String(128)) # Album name
     artist = Column(String(128)) # Artist name
     hidden = Column(Boolean, default=False) # If the song gets deleted, this should be marked as true
-    playlists = relationship("Playlist", secondary = song_to_playlist, cascade = "all")
-
+    playlists = relationship("Playlist", secondary = song_to_playlist, back_populates="songs", cascade = "save-update")
+    user_id = Column(Integer, ForeignKey('users.id'))
+    users = relationship("User", back_populates="songs")
 
 class Playlist(Base):
     __tablename__ = 'playlists'
@@ -60,7 +61,7 @@ class Playlist(Base):
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
     user_id = Column(Integer, ForeignKey('users.id'))
     users = relationship("User", back_populates="playlists")
-    songs = relationship("Song", secondary = song_to_playlist, cascade = "save-update")
+    songs = relationship("Song", secondary = song_to_playlist, back_populates= "playlists", cascade = "save-update")
 
 
 Base.metadata.create_all(engine)
