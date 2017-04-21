@@ -25,9 +25,6 @@ class User(Base, UserMixin):
     session_token = Column(String(128, convert_unicode=True))
     playlists= relationship("Playlist", back_populates="users")
 
-
-
-
     def __repr__(self):
         return "<User(user_id='%s')>" % (self.id)
 
@@ -42,14 +39,15 @@ class User(Base, UserMixin):
             return self.session_token
         else:
             return self.id
-    
+
 
 class Song(Base):
     __tablename__ = 'songs'
-    id = Column(Integer, Sequence('song_id_seq'), primary_key = True)
-    name = Column(String(128))
-    album = Column(String(128))
-    artist = Column(String(128))
+    id = Column(Integer, Sequence('song_id_seq'), primary_key = True) # unique ID
+    name = Column(String(128)) # Name of the song
+    album = Column(String(128)) # Album name
+    artist = Column(String(128)) # Artist name
+    hidden = Column(Boolean, default=False) # If the song gets deleted, this should be marked as true
     playlists = relationship("Playlist", secondary = song_to_playlist, cascade = "all")
 
 
