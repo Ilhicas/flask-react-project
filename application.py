@@ -358,7 +358,7 @@ def get_songs_in_playlist(playlist):
     except Exception as e:
         print(e)
         return make_response("Unknown error", 500)
-        
+
     if my_playlist is None:
         return make_response("Not your playlist", 401)
 
@@ -403,11 +403,24 @@ def create_song():
     return make_response("Song added with success", 200)
 
 #Requirement 12 and A5
-@application.route("/songs/<song>", methods=["DELETE"])
+@application.route("/songs/<int:song>", methods=["DELETE"])
 @login_required
 def delete_song(song):
     #TODO Delete method in models.song, only if user in session is the creator
-    pass
+    # To 'delete' a song, we change the attribute 'hidden' to True
+    try:
+        to_delete = session.query(Song).filter(Song.id == song, Song.user_id == current_user.get_id(token= False)).first()
+    except Exception as e:
+        print(e)
+        return make_response("Unknown error", 500)
+
+    if to_delete is None:
+        return make_response("Not your song", 401)
+
+    to_delete.hidden = True
+    session.commit()
+    return make_response("Song deleted with success", 200)
+
 
 @application.route('/')
 @login_required
