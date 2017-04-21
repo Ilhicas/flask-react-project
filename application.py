@@ -336,9 +336,9 @@ def delete_playlist():
 def get_playlists():
     #TODO Get method in models.playlis associated with user according to request.args order by Name | Creation Date | Size
     #Should default to ascending order by name A to Z
-
+    # To order in sql alchemy: query = session.query(Playlist).filter(Playlist.user_id == current_user.get_id(token = False).ordery_by('Playlist.name'))
     #TODO Playlists only of user id
-    query = session.query(Playlist).filter(Playlist.user_id == current_user.get_id(token=False))
+    query = session.query(Playlist).filter(Playlist.user_id == current_user.get_id(token=False)).order_by(Playlist.name)
     playlists = [row.__dict__ for row in query.all()]
 
     if request.is_json:
@@ -352,7 +352,7 @@ def get_playlists():
 @application.route("/playlists/<playlist>/songs", methods=["GET"])
 @login_required
 def get_songs_in_playlist(playlist):
-    #TODO Get method in models.playlis for all related songs
+    #TODO Get method in models.playlist for all related songs
     pass
 
 
