@@ -34,7 +34,7 @@
         $.fn.editable.defaults.ajaxOptions = {type: "PUT"};
         $("#{{user['id']}}_name").editable({
                     type: 'text',
-                    name: 'device',
+                    name: 'name',
                     pk: "{{user['id']}}",
                     url: "/users/{{user['id']}}",
                     send: 'always',

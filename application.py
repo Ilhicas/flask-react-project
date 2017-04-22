@@ -157,11 +157,12 @@ def create_new_user():
 
 
 #Requirement 1 and A4
-@application.route("/users/<user>", methods=["PUT"])
+@application.route("/users/<int:user>", methods=["PUT"])
 @login_required
 def update_user(user):
     # We get the user sesion_token from the session
     session_token = current_user.get_id()
+    user_id = current_user.get_id(token=False) 
     # Handles a json request if the request is json
     if (request.is_json):
         request_data = request.get_json(force = True)
@@ -171,38 +172,12 @@ def update_user(user):
             confirm_password = request_data['confirm_password']
         else:
             return make_response("There is no new_password, password or password confirmation in request", 400)
-    # Else, we assume the request is a form
     else:
-        user_password = request.form.get('password')
-        new_password = request.form.get('new_password')
-        confirm_password = request.form.get('confirm_password')
-        if (user_email == None or user_password == None):
-            return make_response("There is no new_password, password or password confirmation in request", 400)
-
-    try:
-        to_update = session.query(User).filter(User.id == user, User.session_token == session_token).first()
-    except Exception as e:
-        print(e)
-        return make_response("Unknown error", 500)
-
-    if to_update is None:
-        return make_response("Invalid User", 400)
-
-    if new_password != confirm_password:
-        return make_response("Passwords don't match", 400)
-
-    # If the 'old' password is validated
-    if to_update.check_password(user_password):
-        # We need to create a new session token
-        user_token = unicode(os.urandom(24).encode('hex'))
-        to_update.session_token = user_token
-        to_update.password = new_password
-        to_update.set_password()
-        session.commit()
-        return make_response("User Updated with Success", 200)
-
-    else:
-        return make_response("Wrong Password", 400)
+        if user_id == user:
+            new_value = request.form['value']
+            item = request.form['name']
+            user_obj = session.query(User).filter_by(id=user_id).update({item:new_value})
+            return make_response("%s updated"%(item), 200)
 
 
 
