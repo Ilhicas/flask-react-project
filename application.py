@@ -162,7 +162,7 @@ def create_new_user():
 def update_user(user):
     # We get the user sesion_token from the session
     session_token = current_user.get_id()
-    user_id = current_user.get_id(token=False) 
+    user_id = current_user.get_id(token=False)
     # Handles a json request if the request is json
     if (request.is_json):
         request_data = request.get_json(force = True)
@@ -189,7 +189,7 @@ def user_account(user):
         return render_template("user.html", user=session)
     else:
         return make_response("Unauthorized", 401)
-    
+
 #Requirement 1 - Feito, falta perceber o "return"
 @application.route("/users/<int:user>", methods=["DELETE"])
 @login_required
@@ -417,9 +417,9 @@ def add_song_to_playlist(song, playlist):
 @login_required
 def get_songs():
 
-    query = session.query(Song)
+    query = session.query(Song).order_by(Song.name)
     songs = [row.as_dict() for row in query.all()]
-    
+
     if request.is_json:
         return jsonify(songs)
     else:
