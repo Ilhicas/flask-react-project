@@ -421,8 +421,8 @@ def add_song_to_playlist(song, playlist):
 def get_songs():
 
     query = session.query(Song)
-    songs = [row.__dict__ for row in query.all()]
-
+    songs = [row.as_dict() for row in query.all()]
+    
     if request.is_json:
         return jsonify(songs)
     else:
@@ -451,13 +451,14 @@ def create_song():
         file = request.files['file']
         file.save(os.path.join(application.config['SONG_FOLDER'], file.filename))
         song_name = request.form.get('name')
+        song_path = application.config['SONG_FOLDER']+"/%s"%(file.filename)
         song_album = request.form.get('album')
         song_artist = request.form.get('artist')
         if song_name is None or song_album is None or song_artist is None:
             return make_response("There is no name or description in request", 400)
 
     user_id = current_user.get_id(token=False)
-    new_song = Song(name = song_name, album = song_album, artist = song_artist, user_id = user_id)
+    new_song = Song(name = song_name, album = song_album, artist = song_artist, user_id = user_id, path = song_path)
     session.add(new_song)
     session.commit()
     return make_response("Song added with success", 200)

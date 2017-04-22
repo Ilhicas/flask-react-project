@@ -1,0 +1,8 @@
+Koyama_1_Parada , device_test , 8264 , Koyama 1: Parada. , onUP , Fabio_Soares , Vitor_Costa , Antonio_Ferreira
+Koyama_3_Em_producao , device_test , 8266 , Koyama 3: Em producao. , onDOWN , Fabio_Soares , Vitor_Costa , Antonio_Ferreira
+Koyama_3_Parada , device_test , 8266 , Koyama 3: Parada. , onUP , Fabio_Soares , Vitor_Costa , Antonio_Ferreira
+Koyama_6_Em_producao , device_test , 8268 , Koyama 6: Em producao. , onDOWN , Fabio_Soares , Vitor_Costa , Antonio_Ferreira
+Koyama_6_Parada , device_test , 8268 , Koyama 6: Parada. , onUP , Fabio_Soares , Vitor_Costa , Antonio_Ferreira
+Bicor3100_Em_producao , device_test , 8270 , Bicor 3100: Em producao. , onDOWN , Fabio_Soares , Vitor_Costa , Antonio_Ferreira
+Bicor3100_Parada , device_test , 8270 , Bicor 3100: Parada. , onUP , Fabio_Soares , Vitor_Costa , Antonio_Ferreira
+Bicor_3200-04_Em_producao , device_test , 8272 , Bicor 3200-04 Em producao , onUP , Fabio_Soares , Antonio_Ferreira , Vitor_Costa

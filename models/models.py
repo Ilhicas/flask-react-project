@@ -40,7 +40,11 @@ class User(Base, UserMixin):
             return self.session_token
         else:
             return self.id
-
+            
+    def as_dict(self):
+           return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    
+    
 
 class Song(Base):
     __tablename__ = 'songs'
@@ -54,6 +58,8 @@ class Song(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     users = relationship("User", back_populates="songs")
 
+    def as_dict(self):
+           return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 class Playlist(Base):
     __tablename__ = 'playlists'
@@ -65,6 +71,8 @@ class Playlist(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     users = relationship("User", back_populates="playlists")
     songs = relationship("Song", secondary = song_to_playlist, back_populates= "playlists", cascade = "all,delete")
+    def as_dict(self):
+           return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 Base.metadata.create_all(engine)
