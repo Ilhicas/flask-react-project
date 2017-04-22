@@ -10,69 +10,90 @@
     <div id="collapse{{playlist['id']}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{playlist}}">
         <div class="panel-body">
             <h5 class="list-heading">Name:</h5>
-                     <a id="{{playlist['id']}}_name">{{playlist['name']}}</a></br>
-                     <h5 class="list-heading">Description:</h5>
-                     <a id="{{playlist['id']}}_description">{{playlist['description']}}</a></br>
+            <a id="{{playlist['id']}}_name">{{playlist['name']}}</a></br>
+            <h5 class="list-heading">Description:</h5>
+            <a id="{{playlist['id']}}_description">{{playlist['description']}}</a></br>
         </div>
         <label class="control-label">Songs</label>
         <div>
             <select class="form-control" style="width: 100%" id="selectSongs{{playlist['id']}}" multiple="multiple">
 
-</select>
+        </select>
+        </div>
+        </br>
+        </br>
+        <div>
+            
+                <button id="{{playlist['id']}}_delete" type="button" class="btn btn-default pull-right btn-danger" aria-label="Right Align">
+                <span class="glyphicon glyphicon-remove-sign" aria-hidden="true"> Delete</span>
+                </button>
+        </div>
+        </div>
 </div>
-<div><ul id="songList"></ul></div>
-
 <script>
-            $("#collapse{{playlist['id']}}").on('shown.bs.collapse', function () {
-                $.ajax({
-                    url: "/playlists/{{playlist['id']}}/songs",
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: function (data) {
-                        var temp_data = $.map(data, function (obj) {
-                            return {
-                                id: obj.id,
-                                text: obj.name + "\nAlbum:" + obj.album
-                            }
-                        });
+    $("#collapse{{playlist['id']}}").on('shown.bs.collapse', function () {
+        $.ajax({
+            url: "/playlists/{{playlist['id']}}/songs",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                var temp_data = $.map(data, function (obj) {
+                    return {
+                        id: obj.id,
+                        text: obj.name + "\nAlbum:" + obj.album
+                    }
+                });
 
-                        $("#selectSongs{{playlist['id']}}").select2({
-                            data: songs
-                            
-                        }).on('change', function(e) {
-                            $.ajax({
-                                type: "PUT",
-                                url: "/playlists/{{playlist['id']}}",
-                                contentType: "application/json; charset=utf-8",
-                                dataType: "json",
-                                success: function (data) {
-                                    
-                            }
-                        })    
+                $("#selectSongs{{playlist['id']}}").select2({
+                    data: songs
+
+                }).on('change', function (e) {
+                    $.ajax({
+                        type: "PUT",
+                        url: "/playlists/{{playlist['id']}}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (data) {
+
+                        }
+                    })
                         .select2('data', temp_data);
-                        
-                        });
 
-                }});
-            })
-           
-        $.fn.editable.defaults.mode = 'inline';
-        $.fn.editable.defaults.ajaxOptions = {type: "PUT"};
-        $("#{{playlist['id']}}_name").editable({
-                    type: 'text',
-                    name: 'name',
-                    pk: "{{playlist['id']}}",
-                    url: "/playlists/{{playlist['id']}}",
-                    send: 'always',
-            title: 'Name'});
-        $("#{{playlist['id']}}_description").editable({
-                    type: 'text',
-                    name: 'description',
-                    pk: "{{playlist['id']}}",
-                    url: "/playlists/{{playlist['id']}}",
-                    send: 'always',
-            title: 'Description'});
+                });
 
-        </script>
-</div>
-</div>
+            }
+        });
+    })
+
+    $.fn.editable.defaults.mode = 'inline';
+    $.fn.editable.defaults.ajaxOptions = { type: "PUT" };
+    $("#{{playlist['id']}}_name").editable({
+        type: 'text',
+        name: 'name',
+        pk: "{{playlist['id']}}",
+        url: "/playlists/{{playlist['id']}}",
+        send: 'always',
+        title: 'Name'
+    });
+    $("#{{playlist['id']}}_description").editable({
+        type: 'text',
+        name: 'description',
+        pk: "{{playlist['id']}}",
+        url: "/playlists/{{playlist['id']}}",
+        send: 'always',
+        title: 'Description'
+    });
+
+    $("#{{playlist['id']}}_delete").click(function () {
+        $.ajax({
+            url: "/playlists/{{playlist['id']}}",
+            type: 'DELETE',
+            success: function (result) {
+                $("#panel{{playlist['id']}}").remove();
+
+                ;
+            }
+        });
+    });
+
+</script>
