@@ -456,7 +456,7 @@ def create_song():
     new_song = Song(name = song_name, album = song_album, artist = song_artist, user_id = user_id, path = song_path)
     session.add(new_song)
     session.commit()
-    return make_response("Song added with success", 200)
+    return make_response(str(new_song.id), 200)
 
 #Requirement 12 and A5
 @application.route("/songs/<int:song>", methods=["DELETE"])
@@ -477,6 +477,20 @@ def delete_song(song):
     session.commit()
     return make_response("Song deleted with success", 200)
 
+@application.route("/songs/<int:song>", methods=["GET"])
+@login_required
+def get_song(song):
+    _song = session.query(Song).filter(Song.id == song, Song.user_id == current_user.get_id(token=False)).first()
+    if request.is_xhr:
+        if _song:
+            return make_response(render_template("song.html", song = _song), 200)
+        else:
+            return make_response("Unauthorized", 401)
+    if request.is_json:
+        if _song:
+            return make_response(jsonify(_song), 200)
+        else:
+            return make_response("Unauthorized", 401)
 
 @application.route('/')
 @login_required

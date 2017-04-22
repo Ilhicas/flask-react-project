@@ -49,7 +49,17 @@
                 type: 'POST',
                 data: formData,
                 success: function (data) {
-                    alert(data)
+                    $.ajax({
+                            type: "GET",
+                            url: "/songs/"+data,
+
+                            success: function (data) {
+                                appendDom(data)
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                alert(jqXHR.responseText)
+                            }
+                        })
                 },
                 error : function(jqXHR, textStatus, errorThrown) {
                     alert(jqXHR.responseText)
@@ -61,6 +71,10 @@
         
             return false;
         });
+        function appendDom(data)
+            {
+                $("#accordion").append(data);
+            }
         </script>
         </div>
     </div>
