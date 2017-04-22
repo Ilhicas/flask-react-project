@@ -395,9 +395,9 @@ def del_song_in_playlist(playlist_id, song_id):
 def add_song_to_playlist(song, playlist):
     user_id = current_user.get_id(token=False)
     try:
-        user_song = session.query(Song).filter(Song.id == song, Song.user_id == user_id, Song.hidden == False).first()
+        user_song = session.query(Song).filter(Song.id == song, Song.hidden == False).first()
         if user_song is None:
-            return make_response("Not your song", 401)
+            return make_response("Song does not exist", 401)
         user_playlist = session.query(Playlist).filter(Playlist.id == playlist, Playlist.user_id == user_id).first()
         if user_playlist is None:
             return make_response("Not your playlist", 401)
