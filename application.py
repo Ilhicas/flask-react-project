@@ -492,6 +492,27 @@ def get_song(song):
         else:
             return make_response("Unauthorized", 401)
 
+@application.route("/songs", methods=["PUT"])
+@login_required
+def update_song():
+    pk = request.form['pk']
+    new_value = request.form['value']
+    item = request.form['name']
+
+    if request.is_xhr:
+        if  session.query(Song).filter(Song.id == pk, Song.user_id == current_user.get_id(token=False)).first():
+            session.query(Song).filter_by(id=pk).update({item:new_value})
+            session.commit()
+            return make_response("Song edited", 200)
+        else:
+            return make_response("You cannot edit a music that doesn't belong to you", 401)
+    
+    if request.is_json:
+        if _song:
+            return make_response("Song edited", 200)
+        else:
+            return make_response("You cannot edit a music that doesn't belong to you", 401)
+
 @application.route('/')
 @login_required
 def main():

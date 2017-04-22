@@ -1,16 +1,59 @@
-<div class="panel panel-default" id="panel{{song['id']}}}">
-        <div class="panel-heading" role="tab" id="heading{{song['id']}}}">
+<div class="panel panel-default" id="panel{{song['id']}}">
+        <div class="panel-heading" role="tab" id="heading{{song['id']}}">
             <h4 class="panel-title">
-                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse{{song['id']}}" aria-expanded="false" aria-controls="collapse{{song['id']}}}">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse{{song['id']}}" aria-expanded="false" aria-controls="collapse{{song['id']}}">
           {{song['name']}}
         </a>
             </h4>
         </div>
-        <div id="collapse{{song['id']}}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{song}}}">
+        <div id="collapse{{song['id']}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{song['id']}}">
             <div class="panel-body">
-                <div>{{song['description']}}</div>
+                <h5 class="list-heading">Name:</h5>
+            <a id="{{song['id']}}_name">{{song['name']}}</a></br>
+            <h5 class="list-heading">Album:</h5>
+            <a id="{{song['id']}}_album">{{song['album']}}</a></br>
+            <h5 class="list-heading">Artist:</h5>
+            <a id="{{song['id']}}_artist">{{song['artist']}}</a></br>
             </div>
         
         </div>
 </div>
-    
+<script>
+$.fn.editable.defaults.mode = 'inline';
+    $.fn.editable.defaults.ajaxOptions = { type: "PUT" };
+    $("#{{song['id']}}_name").editable({
+        type: 'text',
+        name: 'name',
+        pk: "{{song['id']}}",
+        url: "/songs",
+        send: 'always',
+        title: 'Name'
+    });
+    $("#{{song['id']}}_album").editable({
+        type: 'text',
+        name: 'album',
+        pk: "{{song['id']}}",
+        url: "/songs",
+        send: 'always',
+        title: 'Album'
+    });
+    $("#{{song['id']}}_artist").editable({
+        type: 'text',
+        name: 'artist',
+        pk: "{{song['id']}}",
+        url: "/songs",
+        send: 'always',
+        title: 'Artist'
+    });
+    $("#{{song['id']}}_delete").click(function () {
+        $.ajax({
+            url: "/song",
+            type: 'DELETE',
+            success: function (result) {
+                $("#panel{{song['id']}}").remove();
+
+                ;
+            }
+        });
+    });
+</script>
