@@ -48,7 +48,10 @@
                         var temp_data = $.map(data, function (obj) {
                             return {
                                 id: obj.id,
-                                text: obj.name + "\nAlbum:" + obj.album
+                                text: obj.name ,
+                                album: obj.album,
+                                artist: obj.artist
+
                             }
                         });
 

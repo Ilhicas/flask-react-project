@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import re
-
+import ast
 from datetime import date, timedelta, datetime
 from flask import Flask, request, abort, render_template, request, flash, \
 url_for, render_template, redirect, make_response
@@ -289,6 +289,7 @@ def update_playlist(playlist):
             return make_response("%s updated"%(item), 200)
         else:
             return make_response("Unauthorized", 401)
+
 @application.route("/playlists/<int:playlist>", methods=["GET"])
 @login_required
 def get_playlist(playlist):
@@ -364,6 +365,35 @@ def get_songs_in_playlist(playlist):
 
     return jsonify(songs)
 
+def _clearSongs(playlist):
+    for song in playlist.songs:
+        playlist.songs.remove(song)
+    session.commit()
+
+    
+@application.route("/playlists/<int:playlist>/songs", methods=["PUT"])
+@login_required
+def edit_songs_in_playlist(playlist):
+    
+    _playlist = session.query(Playlist).filter(Playlist.id == playlist, Playlist.user_id == current_user.get_id(token=False)).first()
+    if _playlist:
+        try:
+            _clearSongs(_playlist)
+            songs_ids = ast.literal_eval(request.data)
+            _songs = list()
+            for id in songs_ids:
+                song = session.query(Song).filter_by(id=int(id)).first()
+                if song:
+                    _playlist.songs.append(song)
+            
+            session.commit()
+            print _playlist.songs
+            return make_response("Songs updated",200)
+        except Exception as e:
+            print e
+            session.rollback()
+    else:
+        return make_response("No such playlist", 400)
 
 def del_song_in_playlist(playlist_id, song_id):
     try:

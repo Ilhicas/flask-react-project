@@ -7,7 +7,7 @@
         </a>
         </h4>
     </div>
-    <div id="collapse{{playlist['id']}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{playlist}}">
+    <div id="collapse{{playlist['id']}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{playlist['id']}}">
         <div class="panel-body">
             <h5 class="list-heading">Name:</h5>
             <a id="{{playlist['id']}}_name">{{playlist['name']}}</a></br>
@@ -31,6 +31,16 @@
         </div>
 </div>
 <script>
+    function formatSelected(data)
+    {
+        toReturn = Array();
+        for (var i = 0; i < data.length; i++) {
+            toReturn.push(data[i].id.toString())
+    
+        }
+        console.log(JSON.stringify(toReturn));
+        return JSON.stringify(toReturn)
+    }
     $("#collapse{{playlist['id']}}").on('shown.bs.collapse', function () {
         $.ajax({
             url: "/playlists/{{playlist['id']}}/songs",
@@ -40,30 +50,42 @@
                 var temp_data = $.map(data, function (obj) {
                     return {
                         id: obj.id,
-                        text: obj.name + "\nAlbum:" + obj.album
+                        text: obj.name
                     }
                 });
 
                 $("#selectSongs{{playlist['id']}}").select2({
-                    data: songs
+                    data: songs,
+                    templateResult: formatSong
 
                 }).on('change', function (e) {
                     $.ajax({
                         type: "PUT",
-                        url: "/playlists/{{playlist['id']}}",
+                        data: formatSelected($(this).select2('data')),
+                        url: "/playlists/{{playlist['id']}}/songs",
                         contentType: "application/json; charset=utf-8",
-                        dataType: "json",
+                       
                         success: function (data) {
 
                         }
                     })
-                        .select2('data', temp_data);
+                        
 
                 });
 
             }
         });
     })
+    
+    function formatSong(song)
+    {
+        if (!song.id) { return song.text; }
+        var $song = $(
+            '<span>Name: '+song.text+'</p>Album: '+song.album+'</p>Artist: '+song.artist+'</p></span>'
+        );
+        return $song;
+    };
+    
 
     $.fn.editable.defaults.mode = 'inline';
     $.fn.editable.defaults.ajaxOptions = { type: "PUT" };
