@@ -291,6 +291,10 @@ def update_playlist(playlist):
     song = request.args.get('add_song')
     if song:
         return add_song_to_playlist(song, playlist)
+    else:
+        song = request.args.get('delete_song')
+        if song:
+            return del_song_in_playlist(playlist, song)
     if (request.is_json):
         request_data = request.get_json(force = True)
         if 'name' in request_data:
@@ -386,15 +390,32 @@ def get_songs_in_playlist(playlist):
 
     return jsonify(songs)
 
-@application.route("/playlists/<int:playlist>/songs", methods=["GET"])
-@login_required
-def del_songs_in_playlist(playlist):
-    pass
+
+def del_song_in_playlist(playlist_id, song_id):
+    try:
+        playlist = session.query(Playlist).filter(Playlist.id == playlist_id, Playlist.user_id == current_user.get_id(token=False)).first()
+        song = session.query(Song).filter(Song.id == song_id, Song.user_id == current_user.get_id(token=False)).first()
+    except Exception as e:
+        print e
+        return make_response("Unknown error", 500)
+
+    if playlist is None:
+        return make_response("Not your playlist", 401)
+    elif song is None:
+        return make_response("Not your playlist", 401)
+
+    if song in playlist.songs:
+        playlist.songs.remove(song)
+        session.commit()
+        return make_response("Song removed from playlist with success", 200)
+    else:
+        return make_response("Song does not belong to plalyist", 400)
+
+
 
 
 #Requirement 10 Add a song to a playlist
-# @application.route("/playlists/<int:song>/<int:playlist>", methods=["PUT"])
-# @login_required
+
 def add_song_to_playlist(song, playlist):
     user_id = current_user.get_id(token=False)
     try:
