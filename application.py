@@ -207,7 +207,7 @@ def delete_user(user):
                 "message": message
             })
         else:
-            return render_template('index.html', message= message)
+            return render_template('index.html', message= message, user = current_user.as_dict())
     # If to_delete is None, the user does not exist or the user that made the request is not the same that we want to delete
     if to_delete is None:
         message = "User does not exist or you are not the user"
@@ -216,7 +216,7 @@ def delete_user(user):
                 "message": message
             })
         else:
-            return render_template('index.html', message= message)
+            return render_template('index.html', message= message, user = current_user.as_dict())
     # We logout the user from the session
     logout_user()
     # We delete the user from the database
@@ -281,30 +281,14 @@ def update_playlist(playlist):
             return make_response("There is no name or description in request", 400)
     # Else, we assume the request is a form
     else:
-        playlist_name = request.form.get('name')
-        playlist_description = request.form.get('description')
-
-    try:
-        to_update = session.query(Playlist).filter(Playlist.id == playlist, Playlist.user_id == user_id).first()
-    except Exception as e:
-        print(e)
-        return make_response("Unknown error", 500)
-
-    if to_update is None:
-        return make_response("There is no such playlist", 400)
-
-    if playlist_name is not None:
-        to_update.name = playlist_name
-    if playlist_description is not None:
-        to_update.description = playlist_description
-
-
-    session.commit()
-
-    print(to_update.name)
-    print(to_update.description)
-
-    return make_response("Playlist updated with success", 200)
+        _playlist = session.query(Playlist).filter(Playlist.id == playlist, Playlist.user_id == current_user.get_id(token=False)).first()
+        if _playlist:
+            new_value = request.form['value']
+            item = request.form['name']
+            user_obj = session.query(Playlist).filter_by(id=playlist).update({item:new_value})
+            return make_response("%s updated"%(item), 200)
+        else:
+            return make_response("Unauthorized", 401)
 
 #Requirement 9
 @application.route("/playlists/<int:playlist>", methods=["DELETE"])
@@ -340,7 +324,7 @@ def get_playlists():
     if request.is_json:
         return jsonify(playlists)
     else:
-        user = current_user.get_id(token=False)
+        user = current_user.as_dict()
         return render_template("playlists.html", user=user, playlists=playlists)
 
 #Requirement 8
@@ -423,7 +407,7 @@ def get_songs():
     if request.is_json:
         return jsonify(songs)
     else:
-        user = current_user.get_id(token=False)
+        user = current_user.as_dict()
         return render_template("songs.html", user=user, songs=songs)
 
 #Requirement 11
@@ -484,7 +468,6 @@ def delete_song(song):
 @login_required
 def main():
     user_token = current_user.as_dict()
-    print user_token
     return render_template('index.html', user=user_token)
 
 @login_manager.unauthorized_handler

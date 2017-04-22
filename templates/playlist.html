@@ -9,7 +9,10 @@
     </div>
     <div id="collapse{{playlist['id']}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{playlist}}">
         <div class="panel-body">
-            <div>{{playlist['description']}}</div>
+            <h5 class="list-heading">Name:</h5>
+                     <a id="{{playlist['id']}}_name">{{playlist['name']}}</a></br>
+                     <h5 class="list-heading">Description:</h5>
+                     <a id="{{playlist['id']}}_description">{{playlist['description']}}</a></br>
         </div>
         <label class="control-label">Songs</label>
         <div>
@@ -52,7 +55,23 @@
 
                 }});
             })
-
+           
+        $.fn.editable.defaults.mode = 'inline';
+        $.fn.editable.defaults.ajaxOptions = {type: "PUT"};
+        $("#{{playlist['id']}}_name").editable({
+                    type: 'text',
+                    name: 'name',
+                    pk: "{{playlist['id']}}",
+                    url: "/playlists/{{playlist['id']}}",
+                    send: 'always',
+            title: 'Name'});
+        $("#{{playlist['id']}}_description").editable({
+                    type: 'text',
+                    name: 'description',
+                    pk: "{{playlist['id']}}",
+                    url: "/playlists/{{playlist['id']}}",
+                    send: 'always',
+            title: 'Description'});
 
         </script>
 </div>
