@@ -370,7 +370,7 @@ def get_songs_in_playlist(playlist):
 def del_song_in_playlist(playlist_id, song_id):
     try:
         playlist = session.query(Playlist).filter(Playlist.id == playlist_id, Playlist.user_id == current_user.get_id(token=False)).first()
-        song = session.query(Song).filter(Song.id == song_id, Song.user_id == current_user.get_id(token=False)).first()
+        song = session.query(Song).filter(Song.id == song_id).first()
     except Exception as e:
         print e
         return make_response("Unknown error", 500)
@@ -378,7 +378,7 @@ def del_song_in_playlist(playlist_id, song_id):
     if playlist is None:
         return make_response("Not your playlist", 401)
     elif song is None:
-        return make_response("Not your playlist", 401)
+        return make_response("Song not in playlist", 400)
 
     if song in playlist.songs:
         playlist.songs.remove(song)
