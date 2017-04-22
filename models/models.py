@@ -20,6 +20,7 @@ song_to_playlist = Table('song_to_playlist', Base.metadata,
 class User(Base, UserMixin):
     __tablename__ = 'users'
     id = Column(Integer, Sequence('user_id_seq'), primary_key = True)
+    name = Column(String(128))
     email = Column(String(128), unique = True)
     password = Column(String(300))
     session_token = Column(String(128, convert_unicode=True))
@@ -40,7 +41,7 @@ class User(Base, UserMixin):
             return self.session_token
         else:
             return self.id
-            
+
     def as_dict(self):
            return {c.name: getattr(self, c.name) for c in self.__table__.columns}
     

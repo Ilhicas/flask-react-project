@@ -23,16 +23,40 @@
                     </div>
     
                 <div>
-        <button id="createPlaylist" type="submit" class="btn btn-primary center-block">Create Playlist</button>
-    </div>
+                    <button id="createPlaylist" type="submit" class="btn btn-primary center-block">Create Playlist</button>
+                </div>
+            </form>
         </div>
 
             
             
         </div>
 
-        </form>
         <script>
+        var songs = null;
+        $(document).ready(function(){
+
+        $.ajax({
+                    url: "/songs",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        var temp_data = $.map(data, function (obj) {
+                            return {
+                                id: obj.id,
+                                text: obj.name + "\nAlbum:" + obj.album
+                            }
+                        });
+
+                        populateSongs(temp_data)
+                    }
+                });
+        
+        });
+        function populateSongs(data)
+        {
+            songs = data;
+        }
         $("#createPlaylist").click(function(event){
                 event.preventDefault();
                 form = $("#playlistForm").serialize() ;

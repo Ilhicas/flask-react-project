@@ -12,15 +12,57 @@
         </div>
         <div id="collapseuser" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headinguser">
             <div class="panel-body">
-                <div>Setting Mock</div>
+                <div>
+                    <h5 class="list-heading">Name:</h5>
+                     <a id="{{user['id']}}_name">{{user['name']}}</a></br>
+                     <h5 class="list-heading">Emai:</h5>
+                     <a id="{{user['id']}}_email">{{user['email']}}</a></br>
+                     <h5 class="list-heading">New Password:</h5>
+                     <input id="password_input" type="password"/></br>
+                     <a id="{{user['id']}}_password"></a></br>
+
+                </div>
             </div>
         </div>
     </div>
 
-        {% for playlist in playlists %} "OK" {% endfor %}
+        
             
     </div>
+    <script>$(document).ready(function() {
+        $.fn.editable.defaults.mode = 'inline';
+        $.fn.editable.defaults.ajaxOptions = {type: "PUT"};
+        $("#{{user['id']}}_name").editable({
+                    type: 'text',
+                    name: 'device',
+                    pk: "{{user['id']}}",
+                    url: "/users/{{user['id']}}",
+                    send: 'always',
+            title: 'Name'});
+        $("#{{user['id']}}_email").editable({
+                    type: 'email',
+                    name: 'email',
+                    pk: "{{user['email']}}",
+                    url: "/users/{{user['id']}}",
+                    send: 'always',
+            title: 'email'});
+        $("#{{user['id']}}_password").editable({
+                    type: 'password',
+                    name: 'password',
+                    pk: "{{user['password']}}",
+                    url: "/users/{{user['id']}}",
+                    send: 'always',
+                    emptytext: "Confirm password",
+            title: 'password',
+            validate: function(value) {
+            if($("#password_input").val() != value) {
 
+                return "Values don't match";
+            }
+}});
+        
+    });
+    </script>
 
     
 {% endblock %}

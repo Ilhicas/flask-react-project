@@ -114,6 +114,7 @@ def create_new_user():
         if 'email' in request_data and 'password' in request_data and 'confirm_password' in request_data:
             user_password = request_data['password']
             user_email = request_data['email']
+            user_name = request_data['name']
             if (user_password != request_data['confirm_password']):
                 return make_response("Passwords don't match", 400)
         else:
@@ -122,6 +123,7 @@ def create_new_user():
     else:
         user_password = request.form.get('password')
         user_email = request.form.get('email')
+        user_name = request.form.get("name")
         if (user_password != request.form.get('confirm_password')):
             return make_response("Passwords don't match", 400)
         if (user_email == None or user_password == None):
@@ -133,7 +135,7 @@ def create_new_user():
 
     # Saves new user in the database
     try:
-        new_user = User(email = user_email, password = user_password, session_token = user_token)
+        new_user = User(email = user_email, password = user_password, session_token = user_token, name= user_name)
         # We hash the password
         new_user.set_password()
         session.add(new_user)
@@ -207,13 +209,12 @@ def update_user(user):
 @application.route("/users/<int:user>", methods=["GET"])
 @login_required
 def user_account(user):
-    session_id = current_user.get_id(token=False)
-
-    if user == session_id:
-        return render_template("user.html", user=session_id)
+    session = current_user.as_dict()
+    if user == session['id']:
+        return render_template("user.html", user=session)
     else:
-        return make_response("Not logged in as that user", 401)
-
+        return make_response("Unauthorized", 401)
+    
 #Requirement 1 - Feito, falta perceber o "return"
 @application.route("/users/<int:user>", methods=["DELETE"])
 @login_required
@@ -507,8 +508,8 @@ def delete_song(song):
 @application.route('/')
 @login_required
 def main():
-    user_token = current_user.get_id(token=False)
-
+    user_token = current_user.as_dict()
+    print user_token
     return render_template('index.html', user=user_token)
 
 @login_manager.unauthorized_handler
