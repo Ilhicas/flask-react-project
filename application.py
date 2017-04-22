@@ -327,11 +327,24 @@ def update_playlist(playlist):
     return make_response("Playlist updated with success", 200)
 
 #Requirement 9
-@application.route("/playlists", methods=["DELETE"])
+@application.route("/playlists/<int:playlist>", methods=["DELETE"])
 @login_required
-def delete_playlist():
+def delete_playlist(playlist):
     #TODO Delete method in playlists song, only the relation should be eliminated, songs are to be stored
-    pass
+    try:
+        to_delete = session.query(Playlist).filter(Playlist.user_id == current_user.get_id(token=False), Playlist.id == playlist).first()
+    except Exception as e:
+        print e
+        return make_response("Unknown error", 500)
+
+    if to_delete is None:
+        return make_response("Not your playlist", 401)
+
+    to_delete.songs = []
+    session.delete(to_delete)
+    session.commit()
+    return make_response("Playlist deleted with success", 200)
+
 
 #Requirement 7 and A4
 @application.route("/playlists", methods=["GET"])
@@ -421,7 +434,7 @@ def get_songs():
 @login_required
 def create_song():
     # Get the name of the uploaded file
-    
+
     #TODO !Implement song upload!
     #TODO Create method in models.playlist - Attribute Name
     # Handles a json request if the request is json
