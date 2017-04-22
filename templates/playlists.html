@@ -13,7 +13,8 @@
                 <form id="playlistForm" role="form" class="col-lg-8 col-lg-offset-2 form-horizontal">
                     <div class="form-group" id="name_form">
                         <label for="name">Name</label>
-                        <input type="text" class="form-control" id="playlist_name" aria-describedby="playlisthelp" placeholder="Name of playlist" name="name">
+                        <input type="text" class="form-control" id="playlist_name" aria-describedby="playlisthelp" placeholder="Name of playlist"
+                            name="name">
 
                     </div>
                     <div class="form-group" id="description_form">
@@ -21,22 +22,25 @@
                         <textarea class="form-control" rows="3" id="description" name="description"></textarea>
 
                     </div>
-    
-                <div>
-                    <button id="createPlaylist" type="submit" class="btn btn-primary center-block">Create Playlist</button>
-                </div>
-            </form>
-        </div>
 
-            
-            
-        </div>
+                    <div>
+                        <button id="createPlaylist" type="submit" class="btn btn-primary center-block">Create Playlist</button>
+                    </div>
+                </form>
+            </div>
 
+
+
+        </div>
+</div>
+</div>
+{% for playlist in playlists %} {% include "playlist.html" %} {% endfor %}
+</div>
         <script>
-        var songs = null;
-        $(document).ready(function(){
+            var songs = null;
+            $(document).ready(function () {
 
-        $.ajax({
+                $.ajax({
                     url: "/songs",
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
@@ -51,31 +55,43 @@
                         populateSongs(temp_data)
                     }
                 });
-        
-        });
-        function populateSongs(data)
-        {
-            songs = data;
-        }
-        $("#createPlaylist").click(function(event){
-                event.preventDefault();
-                form = $("#playlistForm").serialize() ;
-                $.ajax({
-                type: "POST",
-                data: form,
-                url: "/playlists",
 
-                success : function(data){
-                    alert("Changes successfully applied")
-                },
-                error : function(jqXHR, textStatus, errorThrown) {
-                    alert(jqXHR.responseText)
-                }
-            })});
+            });
+            function populateSongs(data) {
+                songs = data;
+            }
+            $("#createPlaylist").click(function (event) {
+                event.preventDefault();
+                form = $("#playlistForm").serialize();
+                $.ajax({
+                    type: "POST",
+                    data: form,
+                    url: "/playlists",
+
+                    success: function (data) {
+                        $.ajax({
+                            type: "GET",
+                            url: "/playlists/"+data,
+
+                            success: function (data) {
+                                appendDom(data)
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                alert(jqXHR.responseText)
+                            }
+                        })
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert(jqXHR.responseText)
+                    }
+                })
+            });
+
+            function appendDom(data)
+            {
+                $("#accordion").append(data);
+            }
         </script>
-        </div>
-    </div>
-        {% for playlist in playlists %} {% include "playlist.html" %} {% endfor %}
-</div>
+
 
 {% endblock %}

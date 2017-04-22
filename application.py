@@ -254,7 +254,7 @@ def create_playlist():
     new_playlist = Playlist(name = playlist_name, description = playlist_description, user_id = user_id)
     session.add(new_playlist)
     session.commit()
-    return make_response("Playlist added with success", 200)
+    return make_response(str(new_playlist.id),200)
 
 
 #Requirement 6
@@ -289,7 +289,21 @@ def update_playlist(playlist):
             return make_response("%s updated"%(item), 200)
         else:
             return make_response("Unauthorized", 401)
-
+@application.route("/playlists/<int:playlist>", methods=["GET"])
+@login_required
+def get_playlist(playlist):
+    _playlist = session.query(Playlist).filter(Playlist.id == playlist, Playlist.user_id == current_user.get_id(token=False)).first()
+    if request.is_xhr:
+        if _playlist:
+            return make_response(render_template("playlist.html", playlist = _playlist), 200)
+        else:
+            return make_response("Unauthorized", 401)
+    if request.is_json:
+        if _playlist:
+            return make_response(jsonify(_playlist), 200)
+        else:
+            return make_response("Unauthorized", 401)
+        
 #Requirement 9
 @application.route("/playlists/<int:playlist>", methods=["DELETE"])
 @login_required
